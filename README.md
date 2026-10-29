@@ -27,15 +27,15 @@ The following screenshots are stored in the repository's `screenshots/` director
 
 | Screenshot 1 | Screenshot 2 |
 |:---:|:---:|
-| ![SMS Gateway Screenshot 1](screenshorts/1.png) | ![SMS Gateway Screenshot 2](screenshots/2.png) |
+| ![SMS Gateway Screenshot 1](screenshorts/1.png) | ![SMS Gateway Screenshot 2](screenshorts/2.png) |
 
 | Screenshot 3 | Screenshot 4 |
 |:---:|:---:|
-| ![SMS Gateway Screenshot 3](screenshots/3.png) | ![SMS Gateway Screenshot 4](screenshots/4.png) |
+| ![SMS Gateway Screenshot 3](screenshorts/3.png) | ![SMS Gateway Screenshot 4](screenshorts/4.png) |
 
 | Screenshot 5 | Screenshot 6 |
 |:---:|:---:|
-| ![SMS Gateway Screenshot 5](screenshots/5.png) | ![SMS Gateway Screenshot 6](screenshots/6.png) |
+| ![SMS Gateway Screenshot 5](screenshorts/5.png) | ![SMS Gateway Screenshot 6](screenshorts/6.png) |
 
 > Make sure the image filenames and capitalization match the actual files in the `screenshots/` directory.
 
