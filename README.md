@@ -27,7 +27,7 @@ The following screenshots are stored in the repository's `screenshots/` director
 
 | Screenshot 1 | Screenshot 2 |
 |:---:|:---:|
-| ![SMS Gateway Screenshot 1](screenshots/1.png) | ![SMS Gateway Screenshot 2](screenshots/2.png) |
+| ![SMS Gateway Screenshot 1](screenshorts/1.png) | ![SMS Gateway Screenshot 2](screenshots/2.png) |
 
 | Screenshot 3 | Screenshot 4 |
 |:---:|:---:|
