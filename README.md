@@ -37,7 +37,7 @@ The following screenshots are stored in the repository's `screenshots/` director
 |:---:|:---:|
 | ![SMS Gateway Screenshot 5](screenshorts/5.png) | ![SMS Gateway Screenshot 6](screenshorts/6.png) |
 
-> Make sure the image filenames and capitalization match the actual files in the `screenshots/` directory.
+
 
 ## How It Works
 
