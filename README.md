@@ -11,23 +11,45 @@ Turn your Android phone into a local-network SMS gateway. Send SMS messages thro
 
 - Send SMS through an Android phone's SIM.
 - HTTP API for website and backend integration.
-- Bearer-token authentication for SMS requests.
+- Bearer-token authentication when enabled and required by the app.
 - Configurable server port.
 - SIM selection for dual-SIM devices.
 - Health-check endpoint for connection testing.
+- QR-code pairing for connecting a compatible website or client.
 - Supports Bangla, English, and other Unicode message text.
 - Can be integrated with PHP, POS, eCommerce, inventory, and custom applications.
+- Supports website-side bulk SMS workflows when implemented by the client.
+- Foreground service for keeping the gateway running while the app is in the background.
+
+## Screenshots
+
+The following screenshots are stored in the repository's `screenshots/` directory.
+
+| Screenshot 1 | Screenshot 2 |
+|:---:|:---:|
+| ![SMS Gateway Screenshot 1](screenshots/1.png) | ![SMS Gateway Screenshot 2](screenshots/2.png) |
+
+| Screenshot 3 | Screenshot 4 |
+|:---:|:---:|
+| ![SMS Gateway Screenshot 3](screenshots/3.png) | ![SMS Gateway Screenshot 4](screenshots/4.png) |
+
+| Screenshot 5 | Screenshot 6 |
+|:---:|:---:|
+| ![SMS Gateway Screenshot 5](screenshots/5.png) | ![SMS Gateway Screenshot 6](screenshots/6.png) |
+
+> Make sure the image filenames and capitalization match the actual files in the `screenshots/` directory.
 
 ## How It Works
 
 1. Install and open the SMS Gateway app on your Android phone.
 2. Grant the required permissions.
 3. Select the SIM for outgoing SMS.
-4. Configure the port and access token.
+4. Configure the server port and access-token settings.
 5. Start the gateway service.
-6. Find the phone's current LAN IP address.
-7. Configure your backend with the gateway IP, port, and token.
-8. Send HTTP requests from your backend to submit SMS messages.
+6. Use the QR-code pairing feature to connect a compatible website or client.
+7. Obtain the current phone LAN IP address, port, and any required authentication details.
+8. Configure your backend with the connection information.
+9. Send HTTP requests from your backend to submit SMS messages.
 
 The Android phone must remain powered on, connected to a reachable network, and running the gateway service.
 
@@ -38,16 +60,19 @@ The Android phone must remain powered on, connected to a reachable network, and 
 - Mobile network signal and sufficient SMS balance.
 - A backend capable of sending HTTP requests.
 - Network access from the backend to the Android phone.
+- A compatible client for the QR-code pairing workflow, if required.
 
 ## Getting Started
 
 1. Install the APK.
 2. Open the app and grant the requested permissions.
 3. Select the desired SIM.
-4. Configure the HTTP port. The default port is `8080`.
-5. Generate or configure an access token.
+4. Configure the HTTP port. The default port is `8080`, if unchanged in your app.
+5. Configure an access token if token authentication is enabled.
 6. Start the gateway.
-7. Note the phone's LAN IP address, port, and access token.
+7. Open the QR-code pairing feature and follow the instructions shown in the app.
+8. Note the phone's current LAN IP address and port.
+9. Configure your website or backend to use the connection details provided by the app.
 
 Example configuration (replace these values with your actual settings):
 
@@ -58,7 +83,23 @@ Example configuration (replace these values with your actual settings):
 | Health endpoint | `http://192.168.1.105:8080/health` |
 | SMS endpoint | `http://192.168.1.105:8080/sms` |
 
-**Important:** These IP and port values are examples only. Use the actual IP and port displayed or configured in your app.
+**Important:** These IP and port values are examples only. Use the actual IP and port displayed or configured in your app. The endpoints above apply to app versions that implement the API described below.
+
+## QR-Code Pairing
+
+The QR-code pairing feature is intended to simplify connecting a compatible website or client to the Android SMS Gateway.
+
+### Pairing steps
+
+1. Open the SMS Gateway app.
+2. Start the gateway if the app requires it before pairing.
+3. Open the QR-code pairing option.
+4. Scan the QR code using the compatible website or client.
+5. Follow the instructions shown by the app and client to complete pairing.
+6. Confirm that the client is using the correct gateway address and authentication settings.
+7. Test the connection before sending SMS messages.
+
+**Important:** The QR-code payload, pairing protocol, and authentication behavior depend on the actual app implementation. A client must follow the pairing format supported by the installed app. Do not assume that scanning the QR code alone authorizes a client.
 
 ## API Documentation
 
@@ -68,7 +109,7 @@ Checks whether the gateway server is reachable.
 
 - **Method:** `GET`
 - **Endpoint:** `/health`
-- **Authentication:** No Bearer token required by the current implementation.
+- **Authentication:** No Bearer token required by the implementation described here.
 
 Example URL:
 
@@ -93,7 +134,7 @@ Submits an SMS message through the selected SIM.
 - **Method:** `POST`
 - **Endpoint:** `/sms`
 - **Content-Type:** `application/json`
-- **Authentication:** Bearer token required.
+- **Authentication:** Bearer token required when token authentication is enabled.
 
 #### Request headers
 
@@ -103,7 +144,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 Accept: application/json
 ```
 
-Replace `YOUR_ACCESS_TOKEN` with the access token configured in the Android app.
+Replace `YOUR_ACCESS_TOKEN` with the access token configured in the Android app, if required.
 
 #### Request body
 
@@ -117,13 +158,13 @@ Replace `YOUR_ACCESS_TOKEN` with the access token configured in the Android app.
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `phone` | String | Yes | Recipient number with an optional leading `+`; 10–15 digits |
-| `message` | String | Yes | SMS message text; maximum 2,000 characters according to the current validation |
+| `message` | String | Yes | SMS message text; maximum 2,000 characters according to the validation described here |
 
 The gateway validates the number's format but does not verify whether the recipient's number is active.
 
 #### Successful response
 
-The current implementation returns HTTP `202 Accepted` when the message is submitted to Android's SMS subsystem.
+The implementation described here returns HTTP `202 Accepted` when the message is submitted to Android's SMS subsystem.
 
 ```json
 {
@@ -140,7 +181,7 @@ The current implementation returns HTTP `202 Accepted` when the message is submi
 | Status | Meaning | Suggested action |
 |---|---|---|
 | `400` | Invalid request | Check the JSON body and required fields |
-| `401` | Unauthorized | Verify the access token |
+| `401` | Unauthorized | Verify the access token if authentication is enabled |
 | `405` | Method not allowed | Use the correct HTTP method |
 | `422` | Invalid phone number or message | Validate the supplied data |
 | `5xx` | Server or gateway error | Check the app, network, permissions, and logs |
@@ -155,7 +196,8 @@ The app does not require a specific PHP script. Website developers can implement
 
 - PHP with the cURL extension enabled.
 - The Android phone's reachable LAN IP and gateway port.
-- The access token configured in the app.
+- The access token, if token authentication is enabled.
+- Network connectivity between the PHP server and Android phone.
 
 ### Example PHP code
 
@@ -170,10 +212,6 @@ $accessToken = getenv('SMS_GATEWAY_TOKEN') ?: '';
 
 $phone = '+8801XXXXXXXXX';
 $message = 'Hello from my PHP website!';
-
-if ($accessToken === '') {
-    throw new RuntimeException('SMS gateway token is not configured.');
-}
 
 if (!filter_var($gatewayIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
     throw new InvalidArgumentException('Invalid gateway IPv4 address.');
@@ -203,18 +241,27 @@ if ($payload === false) {
     throw new RuntimeException('Could not encode SMS request.');
 }
 
-$url = sprintf('http://%s:%d/sms', $gatewayIp, $gatewayPort);
+$url = sprintf(
+    'http://%s:%d/sms',
+    $gatewayIp,
+    $gatewayPort
+);
+
+$headers = [
+    'Content-Type: application/json; charset=utf-8',
+    'Accept: application/json'
+];
+
+if ($accessToken !== '') {
+    $headers[] = 'Authorization: Bearer ' . $accessToken;
+}
 
 $ch = curl_init($url);
 
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => $payload,
-    CURLOPT_HTTPHEADER => [
-        'Content-Type: application/json; charset=utf-8',
-        'Authorization: Bearer ' . $accessToken,
-        'Accept: application/json'
-    ],
+    CURLOPT_HTTPHEADER => $headers,
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_CONNECTTIMEOUT => 5,
     CURLOPT_TIMEOUT => 20,
@@ -228,7 +275,9 @@ $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
 if ($response === false) {
-    throw new RuntimeException('Gateway connection failed: ' . $error);
+    throw new RuntimeException(
+        'Gateway connection failed: ' . $error
+    );
 }
 
 $result = json_decode($response, true);
@@ -239,13 +288,17 @@ if ($status === 202) {
 } else {
     // Log details securely; never log the access token.
     error_log('SMS gateway returned HTTP status ' . $status);
-    throw new RuntimeException('SMS gateway did not accept the request.');
+    throw new RuntimeException(
+        'SMS gateway did not accept the request.'
+    );
 }
 ```
 
+**Note:** This example assumes that the `/sms` endpoint accepts the JSON payload shown above. If token authentication is mandatory in your app, configure the token and send the Bearer header. If authentication is disabled, follow the app's actual configuration and security requirements.
+
 ### PHP integration steps
 
-1. Configure `SMS_GATEWAY_IP`, `SMS_GATEWAY_PORT`, and `SMS_GATEWAY_TOKEN` on the server, or load them from a protected configuration file outside the public web directory.
+1. Configure `SMS_GATEWAY_IP`, `SMS_GATEWAY_PORT`, and, when needed, `SMS_GATEWAY_TOKEN` on the server, or load them from a protected configuration file outside the public web directory.
 2. Replace the example phone number and message with validated application data.
 3. Ensure the PHP server can reach the Android phone's IP and port.
 4. Enable the PHP cURL extension.
@@ -255,17 +308,32 @@ if ($status === 202) {
 
 **Never expose the access token in frontend JavaScript, HTML, or a public repository.** Send requests from your backend.
 
+## Bulk SMS Integration
+
+Bulk SMS functionality can be implemented in the PHP website or other client application.
+
+Recommended workflow:
+
+1. Validate and prepare the recipient list.
+2. Send messages sequentially or through a controlled queue.
+3. Display progress on the website.
+4. Record each message's submission result.
+5. Handle failures and retries carefully to avoid duplicate messages.
+6. Apply rate limits and obtain recipient consent where required.
+
+A website-side progress bar reflects the client application's processing progress; it does not necessarily represent confirmed delivery.
+
 ## Integration Ideas
 
 Developers can integrate the gateway with:
 
-- POS and inventory systems
-- eCommerce order notifications
-- Customer support systems
-- Appointment and booking applications
-- Payment notifications
-- School or business management systems
-- Custom PHP websites and admin panels
+- POS and inventory systems.
+- eCommerce order notifications.
+- Customer support systems.
+- Appointment and booking applications.
+- Payment notifications.
+- School or business management systems.
+- Custom PHP websites and admin panels.
 
 ## Troubleshooting
 
@@ -279,8 +347,9 @@ Developers can integrate the gateway with:
 
 ### Unauthorized response
 
-- Verify that the PHP token exactly matches the app token.
+- Verify that the PHP token matches the app token, if authentication is enabled.
 - Check the `Authorization` header format: `Bearer YOUR_ACCESS_TOKEN`.
+- If authentication is disabled, verify the expected request format in the app.
 
 ### SMS is not received
 
@@ -288,6 +357,13 @@ Developers can integrate the gateway with:
 - Confirm that the selected SIM is active and has mobile signal.
 - Verify the SIM has sufficient balance and can send SMS.
 - Remember that submission does not guarantee delivery.
+
+### QR-code pairing fails
+
+- Use a compatible client.
+- Follow the pairing instructions displayed by the app.
+- Confirm that the client is using the correct gateway details.
+- Check the QR-code format and pairing implementation for your app version.
 
 ### PHP cURL error
 
@@ -299,7 +375,7 @@ Use a DHCP reservation in your router or update your backend configuration when 
 
 ## Security Notes
 
-**The current gateway uses plain HTTP on the local network.** Bearer tokens sent over plain HTTP may be intercepted by someone with access to the network.
+**The gateway may use plain HTTP on the local network.** Bearer tokens sent over plain HTTP may be intercepted by someone with access to the network.
 
 - Use the gateway on a trusted private network.
 - Do not expose the gateway port directly to the public internet.
@@ -324,4 +400,10 @@ Bug reports, documentation improvements, and code contributions are welcome.
 
 When reporting an issue, include the Android version, app version, steps to reproduce, and sanitized error details. Never post access tokens or private phone numbers in public issues.
 
+## Developer
 
+**Developed by Salah Uddin**
+
+## Repository
+
+[https://github.com/salahuddin-saif/SMS-gateway](https://github.com/salahuddin-saif/SMS-gateway)
